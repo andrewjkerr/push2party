@@ -32,7 +32,7 @@
         android:background="@drawable/circle_shape"
         style="?android:attr/progressBarStyleHorizontal"
         android:max="100"
-        android:progress="65" />
+        android:progress="100" />
 
     <ImageView
         android:id="@+id/jbl_icon"
