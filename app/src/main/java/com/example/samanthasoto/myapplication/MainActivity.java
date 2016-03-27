@@ -99,8 +99,6 @@ public class MainActivity extends AppCompatActivity implements PulseNotifiedList
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-
-
         framelayout = (FrameLayout) findViewById(R.id.scene_root);
 
         mScene = Scene.getSceneForLayout(framelayout, R.layout.scene_party_main, this);
