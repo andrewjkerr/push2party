@@ -223,7 +223,7 @@ public class MainActivity extends AppCompatActivity implements PulseNotifiedList
             }
         });
 
-        /*ImageView button_go = (ImageView) findViewById(R.id.go_button);
+        Button button_go = (Button) findViewById(R.id.button_party);
         button_go.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -233,9 +233,9 @@ public class MainActivity extends AppCompatActivity implements PulseNotifiedList
                 TransitionManager.go(m2Scene, new Fade());
 
             }
-        });*/
+        });
 
-        /*ImageView button_pause = (ImageView) findViewById(R.id.button_pause);
+        Button button_pause = (Button) findViewById(R.id.button_pause);
         button_go.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -257,7 +257,7 @@ public class MainActivity extends AppCompatActivity implements PulseNotifiedList
                 TransitionManager.go(m2Scene, new Fade());
 
             }
-        });*/
+        });
 
     }
 
