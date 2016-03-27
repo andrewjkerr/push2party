@@ -88,6 +88,8 @@ public class MainActivity extends AppCompatActivity implements PulseNotifiedList
     int navigationBarHeight = 0;
     public ImplementPulseHandler pulseHandler = new ImplementPulseHandler();
 
+    public final boolean[] helpUs = new boolean[] { false };
+
     public int intervalRemaining = POWER_HOUR_INTERVAL;
 
     @Override
@@ -130,7 +132,6 @@ public class MainActivity extends AppCompatActivity implements PulseNotifiedList
 
                 ProgressBar pb = (ProgressBar) findViewById(R.id.progressBar);
                 pb.setProgress(60 - minutes);
-
             }
 
             @Override
@@ -178,7 +179,7 @@ public class MainActivity extends AppCompatActivity implements PulseNotifiedList
                 //((AppCompatActivity)getActivity()).getSupportActionBar().setBackgroundDrawable(new ColorDrawable(javaColor));
 
                 // Create new pulse color from background color
-                PulseColor blankBackground = new PulseColor();
+                final PulseColor blankBackground = new PulseColor();
                 blankBackground.red = (byte) (255);
                 blankBackground.green = (byte) (255);
                 blankBackground.blue = (byte) (255);
@@ -190,8 +191,12 @@ public class MainActivity extends AppCompatActivity implements PulseNotifiedList
 
                     int i = 98;
 
-                    public void onTick(long millisUntilFinished) {
-                        if (i >= 0) {
+                    public void onTick(long millisUntilFin0ished) {
+                        if (helpUs[0]) {
+                            this.cancel();
+                            Arrays.fill(bitmap, blankBackground);
+                            pulseHandler.SetColorImage(bitmap);
+                        } else if (i >= 0) {
                             bitmap[i] = backgroundColor;
                             i--;
                             pulseHandler.SetColorImage(bitmap);
@@ -237,6 +242,8 @@ public class MainActivity extends AppCompatActivity implements PulseNotifiedList
                 countDownText.start();
                 countDown.start();
 
+                helpUs[0] = false;
+
                 Button button_party = (Button) findViewById(R.id.button_party);
                 button_party.setVisibility(View.GONE);
 
@@ -272,6 +279,8 @@ public class MainActivity extends AppCompatActivity implements PulseNotifiedList
                     i.putExtra(CMDNAME, CMDTOGGLEPAUSE);
                     sendBroadcast(i);
                 }
+
+                helpUs[0] = true;
 
                 Button button_party = (Button) findViewById(R.id.button_party);
                 button_party.setVisibility(View.VISIBLE);
