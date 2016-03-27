@@ -3,6 +3,7 @@ package com.example.samanthasoto.myapplication;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.media.AudioManager;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
@@ -69,7 +70,7 @@ public class MainActivity extends AppCompatActivity implements PulseNotifiedList
 
     // Actual power hour constants...
     public static final int SONG_INTERVAL = 60000;
-    public static final int POWER_HOUR_INTERVAL = 3660000;
+    public static int POWER_HOUR_INTERVAL = 3600000;
 
     // Testing constants
     //public static final int SONG_INTERVAL = 10000;
@@ -101,9 +102,6 @@ public class MainActivity extends AppCompatActivity implements PulseNotifiedList
         framelayout = (FrameLayout) findViewById(R.id.scene_root);
 
         mScene = Scene.getSceneForLayout(framelayout, R.layout.scene_party_main, this);
-        //m2Scene = Scene.getSceneForLayout(framelayout, R.layout.scene_partyplay_main, this);
-        //m3Scene = Scene.getSceneForLayout(framelayout, R.layout.scene_partyhow_main, this);
-        //m4Scene = Scene.getSceneForLayout(framelayout, R.layout.scene_partypaused_main, this);
 
         pulseHandler.ConnectMasterDevice(this);
         pulseHandler.registerPulseNotifiedListener(this);
@@ -112,164 +110,176 @@ public class MainActivity extends AppCompatActivity implements PulseNotifiedList
 
         TransitionManager.go(mScene);
 
+        final CountDownTimer countDownText = new CountDownTimer(POWER_HOUR_INTERVAL, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                // Set timer text
+                TextView text = (TextView) findViewById(R.id.countdown);
+                int hours = (int) millisUntilFinished / 1000 / 60;
+                int minutes = (int) millisUntilFinished / 1000 % 60;
+                String newMinutes = "";
+                if (minutes < 10) {
+                    newMinutes = "0" + minutes;
+                } else {
+                    newMinutes = Integer.toString(minutes);
+                }
+                SpannableStringBuilder sb = new SpannableStringBuilder(hours + ":" + newMinutes);
+                StyleSpan b = new StyleSpan(android.graphics.Typeface.BOLD);
+                sb.setSpan(b, 0, Integer.toString(hours).length(), Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+                text.setText(sb);
+
+                ProgressBar pb = (ProgressBar) findViewById(R.id.progressBar);
+                pb.setProgress(60 - minutes);
+
+            }
+
+            @Override
+            public void onFinish() {
+                TextView text = (TextView) findViewById(R.id.countdown);
+                text.setText("DONE!");
+            }
+        };
+
+        final CountDownTimer countDown = new CountDownTimer(POWER_HOUR_INTERVAL, SONG_INTERVAL) {
+
+            public void onTick(long millisUntilFinished) {
+
+                // Change audio stateintervalRemaining
+                Context context = getApplicationContext();
+                AudioManager mAudioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+
+                if (mAudioManager.isMusicActive()) {
+                    Intent i = new Intent(SERVICECMD);
+                    i.putExtra(CMDNAME, CMDNEXT);
+                    sendBroadcast(i);
+                } else {
+                    Intent i = new Intent(SERVICECMD);
+                    i.putExtra(CMDNAME, CMDTOGGLEPAUSE);
+                    sendBroadcast(i);
+                }
+
+                // Generate new background color
+                Random rand = new Random();
+                int red = rand.nextInt(175);
+                int green = rand.nextInt(175);
+                int blue = rand.nextInt(175);
+
+                // Create new pulse color from background color
+                final PulseColor backgroundColor = new PulseColor();
+                backgroundColor.red = (byte) (red);
+                backgroundColor.green = (byte) (green);
+                backgroundColor.blue = (byte) (blue);
+
+                // Set background color
+                int javaColor = Color.argb(255, red, green, blue);
+                //setBackgroundColor(javaColor);
+
+                // Set title bar color - MIGHT NOT WORK :(
+                //((AppCompatActivity)getActivity()).getSupportActionBar().setBackgroundDrawable(new ColorDrawable(javaColor));
+
+                // Create new pulse color from background color
+                PulseColor blankBackground = new PulseColor();
+                blankBackground.red = (byte) (255);
+                blankBackground.green = (byte) (255);
+                blankBackground.blue = (byte) (255);
+
+                final PulseColor[] bitmap = new PulseColor[99];
+                Arrays.fill(bitmap, blankBackground);
+
+                new CountDownTimer(SONG_INTERVAL, (SONG_INTERVAL / 99)) {
+
+                    int i = 98;
+
+                    public void onTick(long millisUntilFinished) {
+                        if (i >= 0) {
+                            bitmap[i] = backgroundColor;
+                            i--;
+                            pulseHandler.SetColorImage(bitmap);
+                        }
+                    }
+
+                    public void onFinish() {
+                        // Do nothing? ¯\_(ツ)_/¯
+                    }
+                }.start();
+
+                pulseHandler.SetColorImage(bitmap);
+            }
+
+            public void onFinish() {
+                Context context = getApplicationContext();
+                AudioManager mAudioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+
+                if (mAudioManager.isMusicActive()) {
+                    Intent i = new Intent(SERVICECMD);
+                    i.putExtra(CMDNAME, CMDSTOP);
+                    sendBroadcast(i);
+                }
+
+                PulseColor backgroundColor = new PulseColor();
+                backgroundColor.red = (byte) (0);
+                backgroundColor.green = (byte) (0);
+                backgroundColor.blue = (byte) (0);
+
+                pulseHandler.SetBackgroundColor(backgroundColor, false);
+
+                Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+                Ringtone r = RingtoneManager.getRingtone(context.getApplicationContext(), notification);
+                r.play();
+            }
+        };
+
         Button button_party = (Button) findViewById(R.id.button_party);
         assert button_party != null;
         button_party.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                CountDownTimer countDownText = new CountDownTimer(3600000, 1000) {
-                    public int seconds = 0;
-
-                    @Override
-                    public void onTick(long millisUntilFinished) {
-                        // Set timer text
-                        TextView text = (TextView) findViewById(R.id.countdown);
-                        int hours = (int) millisUntilFinished / 1000 / 60;
-                        int minutes = (int) millisUntilFinished / 1000 % 60;
-                        SpannableStringBuilder sb = new SpannableStringBuilder(hours + ":" + minutes);
-                        StyleSpan b = new StyleSpan(android.graphics.Typeface.BOLD);
-                        sb.setSpan(b, 0, Integer.toString(hours).length(), Spannable.SPAN_INCLUSIVE_INCLUSIVE);
-                        text.setText(sb);
-
-                        // Set ring
-                        seconds++;
-                        if (seconds > 60) {
-                            seconds = 0;
-                        }
-                        ProgressBar pb = (ProgressBar) findViewById(R.id.progressBar);
-                        pb.setProgress(seconds);
-                    }
-
-                    @Override
-                    public void onFinish() {
-                        TextView text = (TextView) findViewById(R.id.countdown);
-                        text.setText("DONE!");
-                    }
-                };
                 countDownText.start();
-
-                // Must do +1 songs because finishing tick
-                CountDownTimer countDown = new CountDownTimer(POWER_HOUR_INTERVAL, SONG_INTERVAL) {
-
-                    public void onTick(long millisUntilFinished) {
-                        intervalRemaining = intervalRemaining - SONG_INTERVAL;
-
-                        // Change audio stateintervalRemaining
-                        Context context = getApplicationContext();
-                        AudioManager mAudioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-
-                        if (mAudioManager.isMusicActive()) {
-                            Intent i = new Intent(SERVICECMD);
-                            i.putExtra(CMDNAME, CMDNEXT);
-                            sendBroadcast(i);
-                        } else {
-                            Intent i = new Intent(SERVICECMD);
-                            i.putExtra(CMDNAME, CMDTOGGLEPAUSE);
-                            sendBroadcast(i);
-                        }
-
-                        // Generate new background color
-                        Random rand = new Random();
-                        int red = rand.nextInt(175);
-                        int green = rand.nextInt(175);
-                        int blue = rand.nextInt(175);
-
-                        // Create new pulse color from background color
-                        final PulseColor backgroundColor = new PulseColor();
-                        backgroundColor.red = (byte) (red);
-                        backgroundColor.green = (byte) (green);
-                        backgroundColor.blue = (byte) (blue);
-
-                        // Set background color
-                        int javaColor = Color.argb(255, red, green, blue);
-                        //setBackgroundColor(javaColor);
-
-                        // Set title bar color - MIGHT NOT WORK :(
-                        //((AppCompatActivity)getActivity()).getSupportActionBar().setBackgroundDrawable(new ColorDrawable(javaColor));
-
-                        // Create new pulse color from background color
-                        PulseColor blankBackground = new PulseColor();
-                        blankBackground.red = (byte) (255);
-                        blankBackground.green = (byte) (255);
-                        blankBackground.blue = (byte) (255);
-
-                        final PulseColor[] bitmap = new PulseColor[99];
-                        Arrays.fill(bitmap, blankBackground);
-
-                        new CountDownTimer(SONG_INTERVAL, (SONG_INTERVAL / 99)) {
-
-                            int i = 98;
-
-                            public void onTick(long millisUntilFinished) {
-                                if (i >= 0) {
-                                    bitmap[i] = backgroundColor;
-                                    i--;
-                                    pulseHandler.SetColorImage(bitmap);
-                                }
-                            }
-
-                            public void onFinish() {
-                                // Do nothing? ¯\_(ツ)_/¯
-                            }
-                        }.start();
-
-                        pulseHandler.SetColorImage(bitmap);
-                    }
-
-                    public void onFinish() {
-                        Context context = getApplicationContext();
-                        AudioManager mAudioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-
-                        if (mAudioManager.isMusicActive()) {
-                            Intent i = new Intent(SERVICECMD);
-                            i.putExtra(CMDNAME, CMDSTOP);
-                            sendBroadcast(i);
-                        }
-
-                        PulseColor backgroundColor = new PulseColor();
-                        backgroundColor.red = (byte) (0);
-                        backgroundColor.green = (byte) (0);
-                        backgroundColor.blue = (byte) (0);
-
-                        pulseHandler.SetBackgroundColor(backgroundColor, false);
-
-                        Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-                        Ringtone r = RingtoneManager.getRingtone(context.getApplicationContext(), notification);
-                        r.play();
-                    }
-                };
-
                 countDown.start();
 
+                Button button_party = (Button) findViewById(R.id.button_party);
+                button_party.setVisibility(View.GONE);
 
-                //TransitionManager.go(m2Scene, new Fade());
-
+                Button button_pause = (Button) findViewById(R.id.button_pause);
+                button_pause.setVisibility(View.VISIBLE);
             }
         });
 
-        //Button button_go = (Button) findViewById(R.id.button_party);
-        //button_go.setOnClickListener(new View.OnClickListener() {
-        //    @Override
-        //    public void onClick(View v) {
-//
-        //        //speakers stuff from Andy - play music
-//
-        //        TransitionManager.go(m2Scene, new Fade());
-//
-        //    }
-        //});
-//
-        //Button button_pause = (Button) findViewById(R.id.button_pause);
-        //button_go.setOnClickListener(new View.OnClickListener() {
-        //    @Override
-        //    public void onClick(View v) {
-//
-        //        //speakers stuff from Andy - stop music
-//
-        //        TransitionManager.go(m4Scene, new Fade());
-//
-        //    }
-        //});
+
+        Button button_pause = (Button) findViewById(R.id.button_pause);
+        assert button_pause != null;
+        button_pause.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                countDownText.cancel();
+                countDown.cancel();
+
+                ProgressBar pb = (ProgressBar) findViewById(R.id.progressBar);
+                pb.setProgress(0);
+
+                TextView text = (TextView) findViewById(R.id.countdown);
+                SpannableStringBuilder sb = new SpannableStringBuilder("60:00");
+                StyleSpan b = new StyleSpan(android.graphics.Typeface.BOLD);
+                sb.setSpan(b, 0, 2, Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+                text.setText(sb);
+
+                // Change audio stateintervalRemaining
+                Context context = getApplicationContext();
+                AudioManager mAudioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+
+                if (mAudioManager.isMusicActive()) {
+                    Intent i = new Intent(SERVICECMD);
+                    i.putExtra(CMDNAME, CMDTOGGLEPAUSE);
+                    sendBroadcast(i);
+                }
+
+                Button button_party = (Button) findViewById(R.id.button_party);
+                button_party.setVisibility(View.VISIBLE);
+
+                Button button_pause = (Button) findViewById(R.id.button_pause);
+                button_pause.setVisibility(View.GONE);
+            }
+        });
 //
         //ImageView button_restart = (ImageView) findViewById(R.id.button_restart);
         //button_restart.setOnClickListener(new View.OnClickListener() {
@@ -359,7 +369,7 @@ public class MainActivity extends AppCompatActivity implements PulseNotifiedList
         Log.i(Tag, "onConnectMasterDevice");
         isConnectBT = true;
         cancelTimer();
-        Toast.makeText(this, "onConnectMasterDevice", Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, "onConnectMasterDevice", Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -367,7 +377,7 @@ public class MainActivity extends AppCompatActivity implements PulseNotifiedList
         Log.i(Tag, "onDisconnectMasterDevice");
         isConnectBT = false;
         setTimer();
-        Toast.makeText(this, "onDisconnectMasterDevice", Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, "onDisconnectMasterDevice", Toast.LENGTH_SHORT).show();
     }
 
     @Override
