@@ -4,5 +4,9 @@
     <string name="action_settings">Settings</string>
     <string name="button_party">Let\'s Party!</string>
     <string name="button_pause">Pause</string>
+    <string name="button_go">Let\'s Go!</string>
     <string name="button_partyon">Party On!</string>
+    <string name="howto1">1. Get a drink</string>
+    <string name="howto2">2. Something</string>
+    <string name="howto3">3. DRINK</string>
 </resources>

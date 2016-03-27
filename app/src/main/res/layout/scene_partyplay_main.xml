@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent" android:layout_height="match_parent">
+    android:layout_width="match_parent" android:layout_height="match_parent"
+
+    android:background="@color/colorBG"
+    >
 
     <TextView android:id="@+id/countdown"
         android:layout_width="wrap_content"
@@ -13,8 +16,8 @@
 
     <ProgressBar
         android:id="@+id/progressBar"
-        android:layout_width="200dp"
-        android:layout_height="200dp"
+        android:layout_width="300dp"
+        android:layout_height="300dp"
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
         android:indeterminate="false"
@@ -23,24 +26,25 @@
         style="?android:attr/progressBarStyleHorizontal"
         android:max="100"
         android:progress="65" />
-
-    <Button
-        android:id="@+id/button_pause"
-        android:padding="15dp"
-        android:layout_alignBottom="@id/jbl_icon"
-        android:layout_marginBottom="50dp"
-        android:layout_centerHorizontal="true"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/button_pause" />
+    <!-- needs to be % of seconds left ^ -->
 
     <ImageView
         android:id="@+id/jbl_icon"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="15dp"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:layout_marginBottom="10dp"
+        android:src="@drawable/jbl_icon"/>
+
+    <Button
+        android:id="@+id/button_pause"
+        android:padding="15dp"
+        android:layout_alignBottom="@id/jbl_icon"
+        android:layout_marginBottom="65dp"
+        android:layout_centerHorizontal="true"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/jbl_icon"/>
+        android:text="@string/button_pause" />
 
 </RelativeLayout>

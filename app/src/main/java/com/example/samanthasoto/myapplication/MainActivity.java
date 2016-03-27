@@ -13,6 +13,9 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.Spannable;
+import android.text.SpannableStringBuilder;
+import android.text.style.StyleSpan;
 import android.transition.Fade;
 import android.transition.Scene;
 import android.transition.TransitionManager;
@@ -85,7 +88,6 @@ public class MainActivity extends AppCompatActivity implements PulseNotifiedList
     public ImplementPulseHandler pulseHandler = new ImplementPulseHandler();
 
     public int intervalRemaining = POWER_HOUR_INTERVAL;
-    public int minute = 60;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,15 +101,14 @@ public class MainActivity extends AppCompatActivity implements PulseNotifiedList
         framelayout = (FrameLayout) findViewById(R.id.scene_root);
 
         mScene = Scene.getSceneForLayout(framelayout, R.layout.scene_party_main, this);
-        m2Scene = Scene.getSceneForLayout(framelayout, R.layout.scene_partyplay_main, this);
-        m3Scene = Scene.getSceneForLayout(framelayout, R.layout.scene_partyhow_main, this);
-        m4Scene = Scene.getSceneForLayout(framelayout, R.layout.scene_partypaused_main, this);
+        //m2Scene = Scene.getSceneForLayout(framelayout, R.layout.scene_partyplay_main, this);
+        //m3Scene = Scene.getSceneForLayout(framelayout, R.layout.scene_partyhow_main, this);
+        //m4Scene = Scene.getSceneForLayout(framelayout, R.layout.scene_partypaused_main, this);
 
         pulseHandler.ConnectMasterDevice(this);
         pulseHandler.registerPulseNotifiedListener(this);
         isActive = true;
         setTimer();
-
 
         TransitionManager.go(mScene);
 
@@ -116,16 +117,41 @@ public class MainActivity extends AppCompatActivity implements PulseNotifiedList
         button_party.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                CountDownTimer countDownText = new CountDownTimer(3600000, 1000) {
+                    public int seconds = 0;
+
+                    @Override
+                    public void onTick(long millisUntilFinished) {
+                        // Set timer text
+                        TextView text = (TextView) findViewById(R.id.countdown);
+                        int hours = (int) millisUntilFinished / 1000 / 60;
+                        int minutes = (int) millisUntilFinished / 1000 % 60;
+                        SpannableStringBuilder sb = new SpannableStringBuilder(hours + ":" + minutes);
+                        StyleSpan b = new StyleSpan(android.graphics.Typeface.BOLD);
+                        sb.setSpan(b, 0, Integer.toString(hours).length(), Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+                        text.setText(sb);
+
+                        // Set ring
+                        seconds++;
+                        if (seconds > 60) {
+                            seconds = 0;
+                        }
+                        ProgressBar pb = (ProgressBar) findViewById(R.id.progressBar);
+                        pb.setProgress(seconds);
+                    }
+
+                    @Override
+                    public void onFinish() {
+                        TextView text = (TextView) findViewById(R.id.countdown);
+                        text.setText("DONE!");
+                    }
+                };
+                countDownText.start();
+
                 // Must do +1 songs because finishing tick
                 CountDownTimer countDown = new CountDownTimer(POWER_HOUR_INTERVAL, SONG_INTERVAL) {
 
                     public void onTick(long millisUntilFinished) {
-                        // Update progress bar
-                        minute--;
-                        ProgressBar pb = (ProgressBar) findViewById(R.id.progressBar);
-                        assert pb != null;
-                        pb.setProgress(minute);
-
                         intervalRemaining = intervalRemaining - SONG_INTERVAL;
 
                         // Change audio stateintervalRemaining
@@ -207,8 +233,6 @@ public class MainActivity extends AppCompatActivity implements PulseNotifiedList
 
                         pulseHandler.SetBackgroundColor(backgroundColor, false);
 
-                        minute = 60;
-
                         Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
                         Ringtone r = RingtoneManager.getRingtone(context.getApplicationContext(), notification);
                         r.play();
@@ -218,46 +242,46 @@ public class MainActivity extends AppCompatActivity implements PulseNotifiedList
                 countDown.start();
 
 
-                TransitionManager.go(m2Scene, new Fade());
+                //TransitionManager.go(m2Scene, new Fade());
 
             }
         });
 
-        Button button_go = (Button) findViewById(R.id.button_party);
-        button_go.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                //speakers stuff from Andy - play music
-
-                TransitionManager.go(m2Scene, new Fade());
-
-            }
-        });
-
-        Button button_pause = (Button) findViewById(R.id.button_pause);
-        button_go.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                //speakers stuff from Andy - stop music
-
-                TransitionManager.go(m4Scene, new Fade());
-
-            }
-        });
-
-        ImageView button_restart = (ImageView) findViewById(R.id.button_restart);
-        button_restart.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                //speakers stuff from Andy - play music
-
-                TransitionManager.go(m2Scene, new Fade());
-
-            }
-        });
+        //Button button_go = (Button) findViewById(R.id.button_party);
+        //button_go.setOnClickListener(new View.OnClickListener() {
+        //    @Override
+        //    public void onClick(View v) {
+//
+        //        //speakers stuff from Andy - play music
+//
+        //        TransitionManager.go(m2Scene, new Fade());
+//
+        //    }
+        //});
+//
+        //Button button_pause = (Button) findViewById(R.id.button_pause);
+        //button_go.setOnClickListener(new View.OnClickListener() {
+        //    @Override
+        //    public void onClick(View v) {
+//
+        //        //speakers stuff from Andy - stop music
+//
+        //        TransitionManager.go(m4Scene, new Fade());
+//
+        //    }
+        //});
+//
+        //ImageView button_restart = (ImageView) findViewById(R.id.button_restart);
+        //button_restart.setOnClickListener(new View.OnClickListener() {
+        //    @Override
+        //    public void onClick(View v) {
+//
+        //        //speakers stuff from Andy - play music
+//
+        //        TransitionManager.go(m2Scene, new Fade());
+//
+        //    }
+        //});
 
     }
 
